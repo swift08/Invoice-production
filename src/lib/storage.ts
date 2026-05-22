@@ -1,0 +1,117 @@
+import type { CompanySettings, Invoice } from "./types";
+import { DEFAULT_COMPANY } from "./constants";
+import {
+  deleteInvoiceFn,
+  getCompanyFn,
+  getDataBackendStatus,
+  getInvoiceFn,
+  listInvoicesFn,
+  saveCompanyFn,
+  upsertInvoiceFn,
+} from "@/server/invoice-fns";
+
+export { DEFAULT_COMPANY } from "./constants";
+
+const INVOICES_KEY = "admark.invoices";
+const COMPANY_KEY = "admark.company";
+
+function isBrowser() {
+  return typeof window !== "undefined" && typeof localStorage !== "undefined";
+}
+
+/* --- localStorage fallback when server env is not configured --- */
+
+function loadInvoicesLocal(): Invoice[] {
+  if (!isBrowser()) return [];
+  try {
+    const raw = localStorage.getItem(INVOICES_KEY);
+    return raw ? (JSON.parse(raw) as Invoice[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveInvoicesLocal(invs: Invoice[]) {
+  if (!isBrowser()) return;
+  localStorage.setItem(INVOICES_KEY, JSON.stringify(invs));
+}
+
+function loadCompanyLocal(): CompanySettings {
+  if (!isBrowser()) return DEFAULT_COMPANY;
+  try {
+    const raw = localStorage.getItem(COMPANY_KEY);
+    return raw ? { ...DEFAULT_COMPANY, ...JSON.parse(raw) } : DEFAULT_COMPANY;
+  } catch {
+    return DEFAULT_COMPANY;
+  }
+}
+
+function saveCompanyLocal(c: CompanySettings) {
+  if (!isBrowser()) return;
+  localStorage.setItem(COMPANY_KEY, JSON.stringify(c));
+}
+
+let serverConfiguredCache: boolean | null = null;
+
+async function serverApiEnabled(): Promise<boolean> {
+  if (serverConfiguredCache !== null) return serverConfiguredCache;
+  try {
+    const s = await getDataBackendStatus();
+    serverConfiguredCache = s.configured;
+    return serverConfiguredCache;
+  } catch {
+    serverConfiguredCache = false;
+    return false;
+  }
+}
+
+/** @deprecated Prefer checking getDataBackendStatus in UI — kept for quick sync reads if needed */
+export function usesRemoteDatabase(): boolean {
+  return serverConfiguredCache === true;
+}
+
+export async function loadInvoices(): Promise<Invoice[]> {
+  if (!(await serverApiEnabled())) return loadInvoicesLocal();
+  return listInvoicesFn();
+}
+
+export async function upsertInvoice(inv: Invoice) {
+  if (!(await serverApiEnabled())) {
+    const all = loadInvoicesLocal();
+    const idx = all.findIndex((i) => i.id === inv.id);
+    if (idx >= 0) all[idx] = inv;
+    else all.unshift(inv);
+    saveInvoicesLocal(all);
+    return;
+  }
+  await upsertInvoiceFn({ data: inv });
+}
+
+export async function deleteInvoice(id: string) {
+  if (!(await serverApiEnabled())) {
+    saveInvoicesLocal(loadInvoicesLocal().filter((i) => i.id !== id));
+    return;
+  }
+  await deleteInvoiceFn({ data: { id } });
+}
+
+export async function getInvoice(id: string): Promise<Invoice | undefined> {
+  if (!(await serverApiEnabled())) {
+    return loadInvoicesLocal().find((i) => i.id === id);
+  }
+  const inv = await getInvoiceFn({ data: { id } });
+  return inv ?? undefined;
+}
+
+export async function loadCompany(): Promise<CompanySettings> {
+  if (!(await serverApiEnabled())) return loadCompanyLocal();
+  return getCompanyFn();
+}
+
+export async function saveCompany(c: CompanySettings) {
+  if (!(await serverApiEnabled())) {
+    saveCompanyLocal(c);
+    return;
+  }
+  await saveCompanyFn({ data: c });
+}

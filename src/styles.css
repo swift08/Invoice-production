@@ -1,0 +1,206 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-ink: var(--ink);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  /* App UI tokens; invoice preview uses `.invoice-receipt-surface` for a fixed light receipt */
+  --font-sans:
+    "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --font-serif: "IBM Plex Serif", ui-serif, Georgia, "Times New Roman", serif;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /*
+   * Admark Digitals logo theme: deep black floor, chrome/silver type, candy-apple red CTAs.
+   * (Light paper invoice stays under `.invoice-receipt-surface`.)
+   */
+  --background: oklch(0.055 0.012 270);
+  --foreground: oklch(0.91 0.008 270);
+  --ink: oklch(0.97 0.004 270);
+
+  --card: oklch(0.11 0.014 270);
+  --card-foreground: oklch(0.92 0.006 270);
+  --popover: oklch(0.12 0.016 270);
+  --popover-foreground: oklch(0.93 0.006 270);
+
+  /* Logo red — primary actions match brand */
+  --brand: oklch(0.56 0.22 27);
+  --brand-foreground: oklch(0.99 0 0);
+
+  --primary: oklch(0.56 0.22 27);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.16 0.016 270);
+  --secondary-foreground: oklch(0.9 0.006 270);
+  --muted: oklch(0.15 0.014 270);
+  --muted-foreground: oklch(0.62 0.02 270);
+  --accent: oklch(0.2 0.06 27);
+  --accent-foreground: oklch(0.95 0.04 27);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.92 0.01 270 / 0.12);
+  --input: oklch(0.18 0.02 270);
+  --ring: oklch(0.56 0.22 27);
+
+  --sidebar: oklch(0.05 0.012 270);
+  --sidebar-foreground: oklch(0.91 0.008 270);
+  --sidebar-primary: oklch(0.56 0.22 27);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.15 0.02 270);
+  --sidebar-accent-foreground: oklch(0.94 0.006 270);
+  --sidebar-border: oklch(0.92 0.01 270 / 0.1);
+  --sidebar-ring: oklch(0.56 0.22 27);
+}
+
+/*
+ * On-screen invoice / receipt preview only — paper-like light surface (not logo black).
+ * Tailwind tokens here align with PDF output feel.
+ */
+.invoice-receipt-surface {
+  color-scheme: light;
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.15 0 0);
+  --ink: oklch(0.12 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --brand: oklch(0.52 0.21 27);
+  --brand-foreground: oklch(0.99 0 0);
+  --primary: oklch(0.52 0.21 27);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0 0);
+  --secondary-foreground: oklch(0.15 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.95 0.02 27);
+  --accent-foreground: oklch(0.52 0.21 27);
+  --destructive: oklch(0.55 0.22 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.9 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.52 0.21 27);
+}
+
+.dark {
+  --background: oklch(0.05 0.012 270);
+  --foreground: oklch(0.92 0.008 270);
+  --ink: oklch(0.97 0.004 270);
+  --card: oklch(0.1 0.014 270);
+  --card-foreground: oklch(0.92 0.006 270);
+  --popover: oklch(0.11 0.016 270);
+  --popover-foreground: oklch(0.93 0.006 270);
+  --brand: oklch(0.58 0.21 27);
+  --brand-foreground: oklch(0.99 0 0);
+  --primary: oklch(0.58 0.21 27);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.15 0.016 270);
+  --secondary-foreground: oklch(0.9 0.006 270);
+  --muted: oklch(0.14 0.014 270);
+  --muted-foreground: oklch(0.64 0.02 270);
+  --accent: oklch(0.2 0.06 27);
+  --accent-foreground: oklch(0.96 0.04 27);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.92 0.01 270 / 0.12);
+  --input: oklch(0.17 0.02 270);
+  --ring: oklch(0.58 0.21 27);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    font-family: var(--font-sans);
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+    color-scheme: dark;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-background);
+    /* Subtle red “reflection” under chrome — matches glossy logo energy, not full glass UI */
+    background-image: radial-gradient(
+      115% 55% at 50% -12%,
+      oklch(0.32 0.14 27 / 0.2),
+      transparent 52%
+    );
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-sans);
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  .font-serif {
+    font-family: var(--font-serif);
+    letter-spacing: 0;
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1,
+      "clig" 1;
+  }
+}
+
+@layer utilities {
+  .text-brand {
+    color: var(--color-brand);
+  }
+  .bg-brand {
+    background-color: var(--color-brand);
+  }
+  .border-brand {
+    border-color: var(--color-brand);
+  }
+  .bg-ink {
+    background-color: var(--color-ink);
+  }
+}

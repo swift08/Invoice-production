@@ -1,0 +1,14 @@
+import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServerConfig } from "./env";
+
+export function requireServerSupabase() {
+  const cfg = getSupabaseServerConfig();
+  if (!cfg) {
+    throw new Error(
+      "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in the server environment (e.g. Vercel project env or a local .env file).",
+    );
+  }
+  return createClient(cfg.url, cfg.serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
