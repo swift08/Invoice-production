@@ -12,13 +12,16 @@ Tables: **`invoices`** (`id`, `payload` jsonb, `created_at`) and **`company_sett
 
 ## 2. Environment
 
-Create a **`.env`** file in the project root for local development (`.env` is gitignored). Use the same variable names in the **Vercel** project → **Settings → Environment Variables** for production.
+Create a **`.env`** file in the project root for local development (`.env` is gitignored). Copy from **`.env.example`** or use the same keys in **Vercel** → **Settings → Environment Variables** (you can **Import** from `.env.example` after cloning, then fill values).
 
 | Variable                      | Where to get it / notes                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------------------- |
 | `SUPABASE_URL`                | Project **Settings → API → Project URL**                                                |
 | `SUPABASE_SERVICE_ROLE_KEY`   | **Settings → API → service_role** (secret; server only)                                 |
 | `VITE_PUBLIC_HOME_URL`        | Optional. **Home** nav URL. In dev, defaults to `http://localhost:3002/`. In production builds, defaults to the public site URL in code if unset; override when your marketing app lives elsewhere. |
+| `ADMARK_APP_USERNAME`         | Optional. Portal username (default **`Admark Digitals`**). Matching is **not** case-sensitive; spaces are normalized. |
+| `ADMARK_APP_PASSWORD`         | Optional. Portal password (default set in code). **Case-sensitive.** Override on Vercel for production. |
+| `APP_SESSION_SECRET`          | Optional but **recommended in production**. Long random string used to sign the login cookie. If unset, a dev default is used (anyone who knows it could forge a session). |
 
 Restart the dev server after changing `.env`:
 
@@ -27,6 +30,8 @@ npm run dev
 ```
 
 ## 3. How data flows
+
+- The app shows a **sign-in** page until a valid session cookie is set (username / password checked on the server). **Supabase** server functions also require that cookie.
 
 - UI calls helpers in **`src/lib/storage.ts`**.
 - When the server reports Supabase is configured, those helpers call **`src/server/invoice-fns.ts`** (`createServerFn`), which uses **`SUPABASE_SERVICE_ROLE_KEY`** in **`src/server/supabase-admin.ts`**.
@@ -38,7 +43,7 @@ Features covered end-to-end: **list invoices**, **get invoice**, **create/update
 
 1. Push the repo to GitHub and **Import** the project in [Vercel](https://vercel.com/).
 2. **Build command:** `npm run build` (see `vercel.json`). The Nitro **Vercel** preset writes **`.vercel/output`**; Vercel runs that output as serverless + static assets.
-3. In the Vercel project, set **`SUPABASE_URL`** and **`SUPABASE_SERVICE_ROLE_KEY`** (required for cloud sync). Set **`VITE_PUBLIC_HOME_URL`** only if the marketing site URL should differ from the in-app default.
+3. In the Vercel project, add variables from **`.env.example`**: **`SUPABASE_URL`** and **`SUPABASE_SERVICE_ROLE_KEY`** are required for cloud sync. Set **`APP_SESSION_SECRET`** (recommended) and optionally **`ADMARK_APP_USERNAME`** / **`ADMARK_APP_PASSWORD`**. Set **`VITE_PUBLIC_HOME_URL`** only if the marketing site URL should differ from the in-app default. For each variable, enable **Production**, **Preview**, and (if you use it) **Development** so builds and branches never run with missing secrets.
 4. Deploy. Client-side `console.error` from app helpers is limited in production; use the **Network** tab or Vercel **Functions** logs for failures.
 
 `vercel.json` pins install/build commands. **`package.json`** `engines.node` matches the Nitro/Vercel Node runtime.

@@ -4,12 +4,13 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
+  redirect,
   useRouter,
   useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { Home, Menu } from "lucide-react";
+import { Home, LogOut, Menu } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import {
@@ -23,6 +24,7 @@ import { logClientError } from "@/lib/client-logger";
 import { companyLogoSrc } from "@/lib/company-branding";
 import { loadCompany } from "@/lib/storage";
 import { getDataBackendStatus } from "@/server/invoice-fns";
+import { getAuthStatusFn, logoutFn } from "@/server/auth-fns";
 
 function NotFoundComponent() {
   return (
@@ -69,6 +71,17 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  beforeLoad: async ({ location }) => {
+    if (location.pathname === "/login") return;
+    const { ok } = await getAuthStatusFn();
+    if (!ok) {
+      const path = location.pathname + (location.searchStr || "");
+      throw redirect({
+        to: "/login",
+        search: { redirect: path || "/" },
+      });
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -119,8 +132,16 @@ const navLinkClass = (active: boolean, dense?: boolean) => {
 };
 
 function TopNav() {
+  const router = useRouter();
+  const path = useRouterState({ select: (s) => s.location.pathname });
   const [brandLogo, setBrandLogo] = useState(DEFAULT_PUBLIC_LOGO_URL);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleSignOut = () => {
+    void logoutFn()
+      .then(() => router.navigate({ to: "/login", replace: true, search: { redirect: undefined } }))
+      .catch((e) => logClientError("topNav.signOut", e));
+  };
 
   useEffect(() => {
     void loadCompany()
@@ -128,11 +149,11 @@ function TopNav() {
       .catch(() => setBrandLogo(DEFAULT_PUBLIC_LOGO_URL));
   }, []);
 
-  const path = useRouterState({ select: (s) => s.location.pathname });
-
   useEffect(() => {
     setMenuOpen(false);
   }, [path]);
+
+  if (path === "/login") return null;
 
   const isActive = (to: string) => (to === "/" ? path === "/" : path.startsWith(to));
 
@@ -177,6 +198,15 @@ function TopNav() {
           <Link to="/settings" className={navLinkClass(isActive("/settings"))}>
             Settings
           </Link>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className={navLinkClass(false)}
+            aria-label="Sign out"
+          >
+            <LogOut className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+            Sign out
+          </button>
         </nav>
 
         {/* Mobile menu */}
@@ -236,6 +266,17 @@ function TopNav() {
               >
                 Settings
               </Link>
+              <button
+                type="button"
+                className={navLinkClass(false, true)}
+                onClick={() => {
+                  setMenuOpen(false);
+                  handleSignOut();
+                }}
+              >
+                <LogOut className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                Sign out
+              </button>
             </nav>
           </SheetContent>
         </Sheet>
@@ -247,6 +288,8 @@ function TopNav() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [serverDb, setServerDb] = useState<boolean | null>(null);
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const isLogin = path === "/login";
 
   useEffect(() => {
     void getDataBackendStatus()
@@ -257,8 +300,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background text-foreground">
-        <TopNav />
-        {serverDb === false && (
+        {!isLogin && <TopNav />}
+        {!isLogin && serverDb === false && (
           <div className="border-b border-amber-500/25 bg-amber-950/35 px-4 py-2.5 text-center text-xs text-amber-100 sm:px-6">
             Server database is not configured — data stays in this browser only. Set{" "}
             <code className="rounded bg-amber-500/15 px-1 font-mono text-amber-50">SUPABASE_URL</code>{" "}
@@ -275,7 +318,13 @@ function RootComponent() {
             in the Supabase SQL editor.
           </div>
         )}
-        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <main
+          className={
+            isLogin
+              ? "mx-auto min-h-[calc(100dvh-0px)] max-w-none"
+              : "mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8"
+          }
+        >
           <Outlet />
         </main>
       </div>

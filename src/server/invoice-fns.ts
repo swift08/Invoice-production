@@ -3,6 +3,7 @@ import type { CompanySettings, Invoice } from "@/lib/types";
 import { DEFAULT_COMPANY } from "@/lib/constants";
 import { getSupabaseServerConfig } from "./env";
 import { requireServerSupabase } from "./supabase-admin";
+import { assertAppSession } from "./app-session";
 
 function parseInvoicePayload(payload: unknown): Invoice | null {
   if (!payload || typeof payload !== "object") return null;
@@ -18,6 +19,7 @@ export const getDataBackendStatus = createServerFn({ method: "GET" }).handler(as
 
 export const listInvoicesFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<Invoice[]> => {
+    await assertAppSession();
     const sb = requireServerSupabase();
     const { data, error } = await sb
       .from("invoices")
@@ -39,6 +41,7 @@ export const getInvoiceFn = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data }): Promise<Invoice | null> => {
+    await assertAppSession();
     const sb = requireServerSupabase();
     const { data: row, error } = await sb
       .from("invoices")
@@ -55,6 +58,7 @@ export const upsertInvoiceFn = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data }) => {
+    await assertAppSession();
     const sb = requireServerSupabase();
     const { error } = await sb.from("invoices").upsert({
       id: data.id,
@@ -71,6 +75,7 @@ export const deleteInvoiceFn = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data }) => {
+    await assertAppSession();
     const sb = requireServerSupabase();
     const { error } = await sb.from("invoices").delete().eq("id", data.id);
     if (error) throw error;
@@ -79,6 +84,7 @@ export const deleteInvoiceFn = createServerFn({ method: "POST" })
 
 export const getCompanyFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<CompanySettings> => {
+    await assertAppSession();
     const sb = requireServerSupabase();
     const { data, error } = await sb
       .from("company_settings")
@@ -94,6 +100,7 @@ export const getCompanyFn = createServerFn({ method: "GET" }).handler(
 export const saveCompanyFn = createServerFn({ method: "POST" })
   .inputValidator((data: CompanySettings) => data)
   .handler(async ({ data }) => {
+    await assertAppSession();
     const sb = requireServerSupabase();
     const { error } = await sb.from("company_settings").upsert({
       id: "default",

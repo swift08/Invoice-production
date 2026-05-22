@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as NewRouteImport } from './routes/new'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InvoiceIdRouteImport } from './routes/invoice.$id'
@@ -23,6 +24,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const NewRoute = NewRouteImport.update({
   id: '/new',
   path: '/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoryRoute = HistoryRouteImport.update({
@@ -44,6 +50,7 @@ const InvoiceIdRoute = InvoiceIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/login': typeof LoginRoute
   '/new': typeof NewRoute
   '/settings': typeof SettingsRoute
   '/invoice/$id': typeof InvoiceIdRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/login': typeof LoginRoute
   '/new': typeof NewRoute
   '/settings': typeof SettingsRoute
   '/invoice/$id': typeof InvoiceIdRoute
@@ -59,21 +67,23 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/login': typeof LoginRoute
   '/new': typeof NewRoute
   '/settings': typeof SettingsRoute
   '/invoice/$id': typeof InvoiceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/history' | '/new' | '/settings' | '/invoice/$id'
+  fullPaths: '/' | '/history' | '/login' | '/new' | '/settings' | '/invoice/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/history' | '/new' | '/settings' | '/invoice/$id'
-  id: '__root__' | '/' | '/history' | '/new' | '/settings' | '/invoice/$id'
+  to: '/' | '/history' | '/login' | '/new' | '/settings' | '/invoice/$id'
+  id: '__root__' | '/' | '/history' | '/login' | '/new' | '/settings' | '/invoice/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistoryRoute: typeof HistoryRoute
+  LoginRoute: typeof LoginRoute
   NewRoute: typeof NewRoute
   SettingsRoute: typeof SettingsRoute
   InvoiceIdRoute: typeof InvoiceIdRoute
@@ -93,6 +103,13 @@ declare module '@tanstack/react-router' {
       path: '/new'
       fullPath: '/new'
       preLoaderRoute: typeof NewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/history': {
@@ -122,6 +139,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistoryRoute: HistoryRoute,
+  LoginRoute: LoginRoute,
   NewRoute: NewRoute,
   SettingsRoute: SettingsRoute,
   InvoiceIdRoute: InvoiceIdRoute,

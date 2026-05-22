@@ -9,6 +9,42 @@ import tailwindcss from "@tailwindcss/vite";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 
+/** TanStack Router root route id — must match `src/routes/__root.tsx` / generated `routeTree.gen.ts`. */
+const ROOT_ROUTE_ID = "__root__";
+
+/** If the router generator cannot write `routeTree.gen.ts` (e.g. file lock on Windows), TanStack may leave `TSS_ROUTES_MANIFEST` unset and SSR build fails. Populate a minimal manifest so the build can complete. */
+function ensureTanStackRoutesManifest(): Plugin {
+  const r = (rel: string) => path.join(root, rel);
+  const manifest = {
+    [ROOT_ROUTE_ID]: {
+      filePath: r("src/routes/__root.tsx"),
+      children: ["/", "/history", "/login", "/new", "/settings", "/invoice/$id"],
+    },
+    "/": { filePath: r("src/routes/index.tsx") },
+    "/history": { filePath: r("src/routes/history.tsx") },
+    "/login": { filePath: r("src/routes/login.tsx") },
+    "/new": { filePath: r("src/routes/new.tsx") },
+    "/settings": { filePath: r("src/routes/settings.tsx") },
+    "/invoice/$id": { filePath: r("src/routes/invoice.$id.tsx") },
+  };
+  return {
+    name: "ensure-tss-routes-manifest",
+    enforce: "post",
+    configResolved() {
+      const g = globalThis as unknown as { TSS_ROUTES_MANIFEST?: typeof manifest };
+      if (!g.TSS_ROUTES_MANIFEST) {
+        g.TSS_ROUTES_MANIFEST = manifest;
+      }
+    },
+    generateBundle() {
+      const g = globalThis as unknown as { TSS_ROUTES_MANIFEST?: typeof manifest };
+      if (!g.TSS_ROUTES_MANIFEST) {
+        g.TSS_ROUTES_MANIFEST = manifest;
+      }
+    },
+  };
+}
+
 /** Browsers request `/favicon.ico` by default; we ship SVG and redirect to avoid 404 noise. */
 function faviconIcoRedirect(): Plugin {
   return {
@@ -52,5 +88,6 @@ export default defineConfig({
       },
     }),
     viteReact(),
+    ensureTanStackRoutesManifest(),
   ],
 });

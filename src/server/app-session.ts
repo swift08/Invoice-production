@@ -1,0 +1,67 @@
+import { deleteCookie, getCookie, setCookie } from "@tanstack/react-start/server";
+
+export const APP_SESSION_COOKIE = "admark_gate";
+const COOKIE_PAYLOAD = "admark-billing-gate-v1";
+
+function sessionSecret(): string {
+  return (
+    process.env.APP_SESSION_SECRET?.trim() ||
+    "admark-dev-only-session-secret-change-with-APP_SESSION_SECRET"
+  );
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) {
+    out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return out === 0;
+}
+
+async function signedGateToken(): Promise<string> {
+  const enc = new TextEncoder();
+  const secret = sessionSecret();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(COOKIE_PAYLOAD));
+  return Array.from(new Uint8Array(sig), (x) => x.toString(16).padStart(2, "0")).join("");
+}
+
+export async function sessionCookieValid(): Promise<boolean> {
+  const cookie = getCookie(APP_SESSION_COOKIE);
+  if (!cookie) return false;
+  const expected = await signedGateToken();
+  return timingSafeEqual(cookie, expected);
+}
+
+export async function assertAppSession(): Promise<void> {
+  if (!(await sessionCookieValid())) {
+    throw new Error("Unauthorized");
+  }
+}
+
+export async function mintSessionCookieValue(): Promise<string> {
+  return signedGateToken();
+}
+
+export function writeSessionCookie(token: string): void {
+  const isProd = process.env.NODE_ENV === "production";
+  setCookie(APP_SESSION_COOKIE, token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 14,
+  });
+}
+
+export function eraseSessionCookie(): void {
+  const isProd = process.env.NODE_ENV === "production";
+  deleteCookie(APP_SESSION_COOKIE, { path: "/", secure: isProd, sameSite: "lax" });
+}
