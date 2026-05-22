@@ -73,7 +73,6 @@ export default defineConfig({
     alias: {
       "@": path.resolve(root, "./src"),
     },
-    tsconfigPaths: true,
   },
   plugins: [
     faviconIcoRedirect(),
