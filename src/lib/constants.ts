@@ -12,12 +12,11 @@ export const DEFAULT_UDYAM_CERTIFICATE_URL = "/admark-udyam-certificate.pdf";
 export const COMPANY_WEBSITE_URL = "https://admarkdigitals.com/";
 
 /**
- * “Home” in the app shell — parent site / marketing app.
- * Set `VITE_PUBLIC_HOME_URL` on Vercel if it differs from the public site. In production builds, when unset, defaults to {@link COMPANY_WEBSITE_URL}; in dev, to localhost.
+ * “Home” in the app shell — defaults to this app’s root (`/`).
+ * Set `VITE_PUBLIC_HOME_URL` to an absolute URL (e.g. marketing site) only if Home should leave the app.
  */
 export const PUBLIC_HOME_URL: string =
-  (import.meta.env.VITE_PUBLIC_HOME_URL as string | undefined)?.trim() ||
-  (import.meta.env.DEV ? "http://localhost:3002/" : COMPANY_WEBSITE_URL);
+  (import.meta.env.VITE_PUBLIC_HOME_URL as string | undefined)?.trim() || "/";
 
 export const DEFAULT_COMPANY: CompanySettings = {
   name: "Admark",

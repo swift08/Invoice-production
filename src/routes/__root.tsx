@@ -156,6 +156,7 @@ function TopNav() {
   if (path === "/login") return null;
 
   const isActive = (to: string) => (to === "/" ? path === "/" : path.startsWith(to));
+  const homeIsExternal = /^https?:\/\//i.test(PUBLIC_HOME_URL);
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/95 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
@@ -177,15 +178,26 @@ function TopNav() {
           aria-label="Main"
           className="hidden items-center gap-1 lg:flex lg:gap-1.5"
         >
-          <a
-            href={PUBLIC_HOME_URL}
-            rel="noopener noreferrer"
-            className={navLinkClass(false)}
-            aria-label="Home (opens your main site)"
-          >
-            <Home className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
-            Home
-          </a>
+          {homeIsExternal ? (
+            <a
+              href={PUBLIC_HOME_URL}
+              rel="noopener noreferrer"
+              className={navLinkClass(false)}
+              aria-label="Home (external site)"
+            >
+              <Home className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+              Home
+            </a>
+          ) : (
+            <Link
+              to={PUBLIC_HOME_URL}
+              className={navLinkClass(isActive(PUBLIC_HOME_URL))}
+              aria-label="Home"
+            >
+              <Home className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+              Home
+            </Link>
+          )}
           <Link to="/" className={navLinkClass(isActive("/"))}>
             Dashboard
           </Link>
@@ -229,15 +241,26 @@ function TopNav() {
               className="mt-6 flex flex-col gap-1"
               aria-label="Main mobile"
             >
-              <a
-                href={PUBLIC_HOME_URL}
-                rel="noopener noreferrer"
-                className={navLinkClass(false, true)}
-                onClick={() => setMenuOpen(false)}
-              >
-                <Home className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
-                Home
-              </a>
+              {homeIsExternal ? (
+                <a
+                  href={PUBLIC_HOME_URL}
+                  rel="noopener noreferrer"
+                  className={navLinkClass(false, true)}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <Home className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                  Home
+                </a>
+              ) : (
+                <Link
+                  to={PUBLIC_HOME_URL}
+                  className={navLinkClass(isActive(PUBLIC_HOME_URL), true)}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <Home className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                  Home
+                </Link>
+              )}
               <Link
                 to="/"
                 className={navLinkClass(isActive("/"), true)}

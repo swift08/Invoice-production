@@ -18,7 +18,7 @@ Create a **`.env`** file in the project root for local development (`.env` is gi
 | ----------------------------- | --------------------------------------------------------------------------------------- |
 | `SUPABASE_URL`                | Project **Settings → API → Project URL**                                                |
 | `SUPABASE_SERVICE_ROLE_KEY`   | **Settings → API → service_role** (secret; server only)                                 |
-| `VITE_PUBLIC_HOME_URL`        | Optional. **Home** nav URL. In dev, defaults to `http://localhost:3002/`. In production builds, defaults to the public site URL in code if unset; override when your marketing app lives elsewhere. |
+| `VITE_PUBLIC_HOME_URL`        | Optional. **Home** nav URL. Defaults to **`/`** (this app’s dashboard). Set to an absolute URL (e.g. `https://admarkdigitals.com/`) only if **Home** should open an external site. |
 | `ADMARK_APP_USERNAME`         | Optional. Portal username (default **`Admark Digitals`**). Matching is **not** case-sensitive; spaces are normalized. |
 | `ADMARK_APP_PASSWORD`         | Optional. Portal password (default set in code). **Case-sensitive.** Override on Vercel for production. |
 | `APP_SESSION_SECRET`          | Optional but **recommended in production**. Long random string used to sign the login cookie. If unset, a dev default is used (anyone who knows it could forge a session). |
@@ -43,7 +43,7 @@ Features covered end-to-end: **list invoices**, **get invoice**, **create/update
 
 1. Push the repo to GitHub and **Import** the project in [Vercel](https://vercel.com/).
 2. **Build command:** `npm run build` (see `vercel.json`). The Nitro **Vercel** preset writes **`.vercel/output`**; Vercel runs that output as serverless + static assets.
-3. In the Vercel project, add variables from **`.env.example`**: **`SUPABASE_URL`** and **`SUPABASE_SERVICE_ROLE_KEY`** are required for cloud sync. Set **`APP_SESSION_SECRET`** (recommended) and optionally **`ADMARK_APP_USERNAME`** / **`ADMARK_APP_PASSWORD`**. Set **`VITE_PUBLIC_HOME_URL`** only if the marketing site URL should differ from the in-app default. For each variable, enable **Production**, **Preview**, and (if you use it) **Development** so builds and branches never run with missing secrets.
+3. In the Vercel project, add variables from **`.env.example`**: **`SUPABASE_URL`** and **`SUPABASE_SERVICE_ROLE_KEY`** are required for cloud sync. Set **`APP_SESSION_SECRET`** (recommended) and optionally **`ADMARK_APP_USERNAME`** / **`ADMARK_APP_PASSWORD`**. Set **`VITE_PUBLIC_HOME_URL`** only if **Home** in the nav should point at an external URL instead of **`/`**. For each variable, enable **Production**, **Preview**, and (if you use it) **Development** so builds and branches never run with missing secrets.
 4. Deploy. Client-side `console.error` from app helpers is limited in production; use the **Network** tab or Vercel **Functions** logs for failures.
 
 `vercel.json` pins install/build commands. **`package.json`** `engines.node` matches the Nitro/Vercel Node runtime.
